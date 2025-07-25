@@ -24,27 +24,31 @@ class LocalTraining():
             criterion = nn.CrossEntropyLoss()
         if opt is None:
             opt = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-        
+    
         if self.num_updates is not None:
             self.num_local_epochs = 1
-
+    
         model.train()
         running_loss = 0.0
+        device = next(model.parameters()).device
+    
         for epoch in range(self.num_local_epochs):
             for batch_id, (data, target) in enumerate(trainloader):
-                x_batch, y_batch = data, target
-
+                x_batch, y_batch = data.to(device), target.to(device)
+    
                 opt.zero_grad()
-
                 outputs = model(x_batch)
                 loss = criterion(outputs, y_batch)
-
+    
                 loss.backward()
                 opt.step()
-                
+    
                 running_loss += loss.item()
-
+    
+                if batch_id % 20 == 0:
+                    print(f"  [Epoch {epoch}] Batch {batch_id}: Loss = {loss.item():.4f}")
+    
                 if self.num_updates is not None and batch_id >= self.num_updates:
                     break
-
-        return model, running_loss/(batch_id+1)
+    
+        return model, running_loss / (batch_id + 1 if batch_id >= 0 else 1)
