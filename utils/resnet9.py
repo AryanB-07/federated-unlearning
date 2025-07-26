@@ -2,14 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 def conv_bn(in_channels, out_channels, kernel_size=3, stride=1, padding=1):
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False),
         nn.BatchNorm2d(out_channels),
         nn.CELU(alpha=0.075)
     )
-
 
 class Residual(nn.Module):
     def __init__(self, module):
@@ -18,7 +16,6 @@ class Residual(nn.Module):
 
     def forward(self, x):
         return x + self.module(x)
-
 
 class ResNet9(nn.Module):
     def __init__(self, num_classes=10):
@@ -42,13 +39,14 @@ class ResNet9(nn.Module):
             conv_bn(256, 256)
         ))
 
+        # 🚨 FIXED: Pool to (1, 1) and flatten *inside conv4*
         self.conv4 = nn.Sequential(
             conv_bn(256, 128, kernel_size=3, stride=1, padding=0),
-            nn.AdaptiveMaxPool2d((1, 1)),
+            nn.AdaptiveAvgPool2d((1, 1)),  # <-- IMPORTANT: reduces H×W to 1×1
             nn.Flatten()
         )
 
-        self.flatten = nn.Flatten()
+        # 🚨 FIXED: match the *actual* flattened shape — 128 channels, 1×1 spatial => 128 dims
         self.fc = nn.Linear(128, num_classes, bias=False)
 
     def forward(self, x):
@@ -57,11 +55,9 @@ class ResNet9(nn.Module):
         x = self.res1(x)
         x = self.conv3(x)
         x = self.res2(x)
-        x = self.conv4(x)
-        x = self.flatten(x)
+        x = self.conv4(x)  # includes flatten
         x = self.fc(x)
         return x
-
 
 def resnet9(num_classes=10):
     model = ResNet9(num_classes)
