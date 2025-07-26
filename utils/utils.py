@@ -21,17 +21,23 @@ class Utils():
             distances[i] = Utils.get_distance(current_model, party_models[i])
         return distances
 
+    @staticmethod
     def evaluate(testloader, model):
         model.eval()
+        device = next(model.parameters()).device  # Detect model's device (GPU or CPU)
+    
         correct = 0
         total = 0
         with torch.no_grad():
             for data in testloader:
                 images, labels = data
+                images = images.to(device)
+                labels = labels.to(device)
+    
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-
+    
         return 100 * correct / total
 
