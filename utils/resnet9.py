@@ -13,7 +13,7 @@ def conv_bn(in_channels, out_channels, kernel_size=3, stride=1, padding=1):
 
 class Residual(nn.Module):
     def __init__(self, module):
-        super(Residual, self).__init__()
+        super().__init__()
         self.module = module
 
     def forward(self, x):
@@ -21,40 +21,47 @@ class Residual(nn.Module):
 
 
 class ResNet9(nn.Module):
-    def __init__(self, num_classes: int = 10):
-        super(ResNet9, self).__init__()
+    def __init__(self, num_classes=10):
+        super().__init__()
 
         self.conv1 = conv_bn(3, 64)
-        self.conv2 = conv_bn(64, 128, 5, 2, 2)
+        self.conv2 = conv_bn(64, 128, kernel_size=5, stride=2, padding=2)
 
-        self.layer1 = Residual(nn.Sequential(
+        self.res1 = Residual(nn.Sequential(
             conv_bn(128, 128),
             conv_bn(128, 128)
         ))
-        self.res1 = self.layer1  # Alias for SSD compatibility
 
         self.conv3 = nn.Sequential(
             conv_bn(128, 256),
             nn.MaxPool2d(2)
         )
 
-        self.layer2 = Residual(nn.Sequential(
+        self.res2 = Residual(nn.Sequential(
             conv_bn(256, 256),
             conv_bn(256, 256)
         ))
-        self.res2 = self.layer2  # Alias for SSD compatibility
 
-        self.avgpool = nn.AdaptiveMaxPool2d((1, 1))
-        self.flatten = nn.Flatten()
-        self.fc = nn.Linear(256, num_classes, bias=False)
+        self.conv4 = nn.Sequential(
+            conv_bn(256, 128, kernel_size=3, stride=1, padding=0),
+            nn.AdaptiveMaxPool2d((1, 1)),
+            nn.Flatten()
+        )
+
+        self.fc = nn.Linear(128, num_classes, bias=False)
 
     def forward(self, x):
         x = self.conv1(x)
         x = self.conv2(x)
-        x = self.layer1(x)
+        x = self.res1(x)
         x = self.conv3(x)
-        x = self.layer2(x)
-        x = self.avgpool(x)
-        x = self.flatten(x)
+        x = self.res2(x)
+        x = self.conv4(x)
         x = self.fc(x)
         return x
+
+
+def resnet9(num_classes=10):
+    model = ResNet9(num_classes)
+    model.embed_size = 128
+    return model
