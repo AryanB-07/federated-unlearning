@@ -24,26 +24,27 @@ class ResNet9(nn.Module):
     def __init__(self, num_classes: int = 10):
         super(ResNet9, self).__init__()
 
-        # Define layers and also expose standard names for compatibility
-        self.conv1 = conv_bn(3, 64)                          # [N, 64, 32, 32]
-        self.conv2 = conv_bn(64, 128, 5, 2, 2)              # [N, 128, 16, 16]
+        self.conv1 = conv_bn(3, 64)
+        self.conv2 = conv_bn(64, 128, 5, 2, 2)
 
-        self.layer1 = Residual(nn.Sequential(               # Acts like "layer1" in ResNet
+        self.layer1 = Residual(nn.Sequential(
             conv_bn(128, 128),
             conv_bn(128, 128)
         ))
+        self.res1 = self.layer1  # Alias for SSD compatibility
 
-        self.conv3 = nn.Sequential(                         # [N, 256, 8, 8]
+        self.conv3 = nn.Sequential(
             conv_bn(128, 256),
             nn.MaxPool2d(2)
         )
 
-        self.layer2 = Residual(nn.Sequential(              # Acts like "layer2" in ResNet
+        self.layer2 = Residual(nn.Sequential(
             conv_bn(256, 256),
             conv_bn(256, 256)
         ))
+        self.res2 = self.layer2  # Alias for SSD compatibility
 
-        self.avgpool = nn.AdaptiveMaxPool2d((1, 1))        # [N, 256, 1, 1]
+        self.avgpool = nn.AdaptiveMaxPool2d((1, 1))
         self.flatten = nn.Flatten()
         self.fc = nn.Linear(256, num_classes, bias=False)
 
