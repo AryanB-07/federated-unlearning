@@ -44,7 +44,8 @@ class ResNet9(nn.Module):
 
         self.conv4 = nn.Sequential(
             conv_bn(256, 128, kernel_size=3, stride=1, padding=0),
-            nn.AdaptiveMaxPool2d((1, 1))
+            nn.AdaptiveMaxPool2d((1, 1)),
+            nn.Flatten()
         )
 
         self.flatten = nn.Flatten()
