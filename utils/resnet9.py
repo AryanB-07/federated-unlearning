@@ -44,10 +44,10 @@ class ResNet9(nn.Module):
 
         self.conv4 = nn.Sequential(
             conv_bn(256, 128, kernel_size=3, stride=1, padding=0),
-            nn.AdaptiveMaxPool2d((1, 1)),
-            nn.Flatten()
+            nn.AdaptiveMaxPool2d((1, 1))
         )
 
+        self.flatten = nn.Flatten()
         self.fc = nn.Linear(128, num_classes, bias=False)
 
     def forward(self, x):
@@ -57,6 +57,7 @@ class ResNet9(nn.Module):
         x = self.conv3(x)
         x = self.res2(x)
         x = self.conv4(x)
+        x = self.flatten(x)
         x = self.fc(x)
         return x
 
