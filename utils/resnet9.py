@@ -116,6 +116,7 @@ class ResNet9(nn.Module):
 
         self.conv4 = conv_bn(256, 128, kernel_size=3, stride=1, padding=0)
 
+        self.flatten = nn.Flatten()
         self.fc = nn.Linear(128, num_classes, bias=False)
 
     def forward(self, x):
