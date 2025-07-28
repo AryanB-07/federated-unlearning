@@ -116,8 +116,8 @@ class ResNet9(nn.Module):
 
         self.conv4 = conv_bn(256, 128, kernel_size=3, stride=1, padding=0)
 
-        self.flatten = nn.Flatten()
-        self.fc = nn.Linear(128, num_classes, bias=False)
+        self.flatten = nn.Flatten()  # For compatibility with SSD code
+        self.fc = nn.Linear(4608, num_classes, bias=False)  # 128×6×6 = 4608
 
     def forward(self, x):
         x = self.conv1(x)
@@ -126,15 +126,12 @@ class ResNet9(nn.Module):
         x = self.conv3(x)
         x = self.res2(x)
         x = self.conv4(x)
-        x = F.adaptive_avg_pool2d(x, (1, 1))  # Ensures shape (B, 128, 1, 1)
-        x = x.view(x.size(0), -1)  # Flattens to shape (B, 128)
-        print("Shape before fc:", x.shape)
+        x = x.view(x.size(0), -1)  # Flatten
         x = self.fc(x)
         return x
 
 
 def resnet9(num_classes=10):
     model = ResNet9(num_classes)
-    model.embed_size = 128
+    model.embed_size = 4608  # Match the actual flattened size
     return model
-
