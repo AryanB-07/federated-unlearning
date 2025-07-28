@@ -45,8 +45,6 @@ class LocalTraining():
     
                 running_loss += loss.item()
     
-                if batch_id % 20 == 0:
-                    print(f"  [Epoch {epoch}] Batch {batch_id}: Loss = {loss.item():.4f}")
     
                 if self.num_updates is not None and batch_id >= self.num_updates:
                     break
