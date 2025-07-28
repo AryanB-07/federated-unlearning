@@ -59,6 +59,7 @@ class ResNet9(nn.Module):
         x = self.res2(x)
         x = self.conv4(x)  # Already flattened here
         x = self.flatten(x)  # No-op
+        print("Shape before fc:", x.shape)
         x = self.fc(x)
         return x
 
