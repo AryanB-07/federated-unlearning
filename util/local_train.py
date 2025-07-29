@@ -16,10 +16,7 @@ class LocalTraining():
         self.num_local_epochs = num_local_epochs
         
 
-    def train(self, model, trainloader, criterion=None, opt=None, lr = 1e-2):
-        """
-        Method for local training
-        """
+    def train(self, model, trainloader, criterion=None, opt=None, lr=1e-2):
         if criterion is None:
             criterion = nn.CrossEntropyLoss()
         if opt is None:
@@ -30,6 +27,7 @@ class LocalTraining():
     
         model.train()
         running_loss = 0.0
+        total_samples = 0
         device = next(model.parameters()).device
     
         for epoch in range(self.num_local_epochs):
@@ -39,14 +37,14 @@ class LocalTraining():
                 opt.zero_grad()
                 outputs = model(x_batch)
                 loss = criterion(outputs, y_batch)
-    
                 loss.backward()
                 opt.step()
     
-                running_loss += loss.item()
-    
+                running_loss += loss.item() * x_batch.size(0)
+                total_samples += x_batch.size(0)
     
                 if self.num_updates is not None and batch_id >= self.num_updates:
                     break
     
-        return model, running_loss / (batch_id + 1 if batch_id >= 0 else 1)
+        avg_loss = running_loss / total_samples if total_samples > 0 else 0
+        return model, avg_loss
