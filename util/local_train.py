@@ -33,7 +33,7 @@ class LocalTraining():
         device = next(model.parameters()).device
     
         for epoch in range(self.num_local_epochs):
-            for batch_id, (data, target) in enumerate(trainloader):
+            for batch_id, (data, target, *_) in enumerate(trainloader):
                 x_batch, y_batch = data.to(device), target.to(device)
     
                 opt.zero_grad()
