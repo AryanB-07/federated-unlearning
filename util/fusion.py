@@ -23,7 +23,7 @@ class Fusion(abc.ABC):
         with torch.no_grad():
             sum_vec = nn.utils.parameters_to_vector(party_models[selected_parties[0]].parameters())
             if len(selected_parties) > 1:
-                for i in range(1,len(selected_parties)):
+                for i in range(len(selected_parties)):
                     sum_vec += nn.utils.parameters_to_vector(party_models[selected_parties[i]].parameters())
                 sum_vec /= len(selected_parties)
 
