@@ -23,17 +23,21 @@ class Fusion(abc.ABC):
         with torch.no_grad():
             # Calculate weights based on dataset sizes
             if self.party_sample_counts is not None:
-                # Weighted averaging
                 total_samples = sum([self.party_sample_counts[i] for i in selected_parties])
                 weights = [self.party_sample_counts[i] / total_samples for i in selected_parties]
+                print(f"      Selected parties: {selected_parties}")
+                print(f"      Sample counts: {[self.party_sample_counts[i] for i in selected_parties]}")
+                print(f"      Weights: {[f'{w:.4f}' for w in weights]}")
             else:
-                # Fallback to uniform averaging
                 weights = [1.0 / len(selected_parties)] * len(selected_parties)
+                print(f"      Uniform weights for {len(selected_parties)} parties")
             
             # Weighted sum
             sum_vec = weights[0] * nn.utils.parameters_to_vector(party_models[selected_parties[0]].parameters())
             for i in range(1, len(selected_parties)):
                 sum_vec += weights[i] * nn.utils.parameters_to_vector(party_models[selected_parties[i]].parameters())
+            
+            print(f"      Aggregated params: mean={sum_vec.mean():.6f}, std={sum_vec.std():.6f}")
             
             model = copy.deepcopy(party_models[0])
             nn.utils.vector_to_parameters(sum_vec, model.parameters())
