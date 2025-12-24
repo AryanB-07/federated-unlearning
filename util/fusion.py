@@ -64,8 +64,7 @@ class FusionRetrain(Fusion):
         super().__init__(num_parties, party_sample_counts)
         self.name = "Fusion-Retrain"
         
-    # Currently, we assume that the party to be erased is party_id = 0
     def fusion_algo(self, party_models, current_model=None):
-        selected_parties = [i for i in range(1, self.num_parties)]
+        selected_parties = [i for i in range(self.num_parties)]
         aggregated_model_state_dict = super().average_selected_models(selected_parties, party_models)
         return aggregated_model_state_dict
